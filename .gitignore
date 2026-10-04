@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+env/
+*.egg-info/
+build/
+dist/
+
+# Scan outputs / baselines (project-specific, not source)
+.mcp-trust/
+*.report.md
+*.report.json
+
+# OS
+.DS_Store

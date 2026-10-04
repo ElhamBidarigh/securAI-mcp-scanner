@@ -1,0 +1,10 @@
+# Core scanner (config parsing + static checks + heuristics) has ZERO
+# dependencies beyond the Python standard library.
+#
+# Install the extras below only for the optional features you want:
+
+# --live   (connect to a real MCP server and list its live tools)
+mcp>=1.0.0
+
+# --llm-judge   (semantic second-opinion review via the Anthropic API)
+anthropic>=0.40.0
