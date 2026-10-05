@@ -1,6 +1,6 @@
 """
-MCP Trust Scanner
-==================
+SecurAI MCP Scanner
+====================
 
 A security scanner for Model Context Protocol (MCP) server configurations
 and live tool surfaces. Detects:

@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mcp-trust-scanner"
+name = "securai-mcp-scanner"
 version = "0.1.0"
-description = "Security scanner for Model Context Protocol (MCP) server configs and live tool surfaces."
+description = "Security scanner for Model Context Protocol (MCP) server configs and live tool surfaces. Part of the SecurAI toolkit."
 requires-python = ">=3.10"
 authors = [{name = "Ellie Bidarigh"}]
 
@@ -15,6 +15,7 @@ llm = ["anthropic>=0.40.0"]
 all = ["mcp>=1.0.0", "anthropic>=0.40.0"]
 
 [project.scripts]
+securai-mcp-scanner = "mcp_trust_scanner.cli:main"
 mcp-trust-scanner = "mcp_trust_scanner.cli:main"
 
 [tool.setuptools.packages.find]

@@ -154,7 +154,7 @@ def to_markdown(
     lines.append("## Methodology")
     lines.append("")
     lines.append(
-        "This assessment was produced with MCP Trust Scanner, a tool combining three layers: "
+        "This assessment was produced with SecurAI MCP Scanner, a tool combining three layers: "
         "(1) static analysis of server launch configuration against known MCP risk patterns "
         "(command injection, unpinned supply-chain dependencies, plaintext secrets, "
         "overly broad filesystem/network access, missing transport security); "

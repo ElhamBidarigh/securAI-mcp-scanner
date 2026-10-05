@@ -1,8 +1,10 @@
-# MCP Trust Scanner
+# 🔌 SecurAI MCP Scanner
 
 🇮🇷 [راهنمای فارسی](README.fa.md)
 
 A security scanner for **MCP (Model Context Protocol)** server configurations and live tool surfaces — the protocol that connects AI agents (Claude, Cursor, VS Code, ChatGPT plugins, etc.) to external tools.
+
+Part of the **[SecurAI toolkit](https://github.com/ElhamBidarigh/securai)** — this is the member of the family that covers the *agent/tool* layer, complementing the others' focus on AI-generated application code.
 
 MCP adoption has outpaced its security tooling: independent 2026 audits have found large fractions of public MCP servers vulnerable to command injection and path traversal, with average security scores in the 30s out of 100. This tool gives you a repeatable, scriptable way to check a server before you trust it — and keep checking it, since a server can be clean today and silently different tomorrow.
 
@@ -19,8 +21,8 @@ Optionally:
 ## Install
 
 ```bash
-git clone https://github.com/<your-username>/mcp-trust-scanner.git
-cd mcp-trust-scanner
+git clone https://github.com/ElhamBidarigh/securAI-mcp-scanner.git
+cd securAI-mcp-scanner
 python3 -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 
@@ -94,6 +96,16 @@ python -m mcp_trust_scanner.cli scan .mcp.json --fail-on high
 ```
 
 This fails the build if a tool's description/schema changed since the last approved baseline, or if any new high/critical config issue shows up.
+
+## The full SecurAI toolkit
+
+| Tool | Type | Link |
+|---|---|---|
+| 🛡️ Audit Tool | Self-assessment (browser) | [Live demo](https://elhambidarigh.github.io/securai/) |
+| 🔬 Vuln Lab | Educational (PHP/MySQL) | [Repo](https://github.com/ElhamBidarigh/securAI-vuln-lab) |
+| 🔐 JWT Analyzer | CLI (Python) | [Repo](https://github.com/ElhamBidarigh/jwt-analyzer) |
+| 🔍 Active Scanner | Live URL scanner (PHP) | [Repo](https://github.com/ElhamBidarigh/securAI-active-scanner) |
+| 🔌 MCP Scanner | CLI (Python) | You are here |
 
 ## Project layout
 

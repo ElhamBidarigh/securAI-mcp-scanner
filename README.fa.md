@@ -1,8 +1,12 @@
-# MCP Trust Scanner
+# 🔌 SecurAI MCP Scanner
 
 🇬🇧 [English README](README.md)
 
-اسکنر امنیتی برای سرورهای **MCP** (Model Context Protocol) — همان پروتکلی که ابزارها را به ایجنت‌های AI (کلود، کورسر، ChatGPT با پلاگین و...) وصل می‌کند. این ابزار سه لایه را بررسی می‌کند:
+اسکنر امنیتی برای سرورهای **MCP** (Model Context Protocol) — همان پروتکلی که ابزارها را به ایجنت‌های AI (کلود، کورسر، ChatGPT با پلاگین و...) وصل می‌کند.
+
+بخشی از **[مجموعه‌ی SecurAI](https://github.com/ElhamBidarigh/securai)** — عضوی از خانواده که لایه‌ی «ابزار/ایجنت» را پوشش می‌دهد، مکمل بقیه‌ی اعضا که روی کد اپ‌های تولیدشده با AI تمرکز دارند.
+
+این ابزار سه لایه را بررسی می‌کند:
 
 1. **پیکربندی سرور** (استاتیک، بدون نیاز به اتصال): تزریق دستور (command injection)، وابستگی‌های بدون نسخه‌ی ثابت، رمز عبور خام در فایل کانفیگ، دسترسی بیش‌ازحد به فایل‌سیستم، اتصال ناامن HTTP.
 2. **توضیحات ابزارها (Tool Poisoning)**: بررسی متن `description` هر ابزار برای پیدا کردن دستورات مخفی prompt injection — همان چیزی که مدل می‌خواند ولی کاربر در رابط کاربری نمی‌بیند.
@@ -17,7 +21,7 @@
 ## نصب
 
 ```bash
-cd mcp-trust-scanner
+cd securAI-mcp-scanner
 python3 -m venv venv
 source venv/bin/activate          # ویندوز: venv\Scripts\activate
 
@@ -125,6 +129,16 @@ mcp-trust-scanner scan CONFIG.json
   --fail-on SEVERITY        خروج با کد غیرصفر اگر یافته‌ای در این حد یا بالاتر بود (برای CI)
   --quiet                   حذف خط خلاصه از stderr
 ```
+
+## مجموعه‌ی کامل SecurAI
+
+| ابزار | نوع | لینک |
+|---|---|---|
+| 🛡️ Audit Tool | خودارزیابی (مرورگر) | [نسخه‌ی زنده](https://elhambidarigh.github.io/securai/) |
+| 🔬 Vuln Lab | آموزشی (PHP/MySQL) | [ریپو](https://github.com/ElhamBidarigh/securAI-vuln-lab) |
+| 🔐 JWT Analyzer | CLI (پایتون) | [ریپو](https://github.com/ElhamBidarigh/jwt-analyzer) |
+| 🔍 Active Scanner | اسکنر URL زنده (PHP) | [ریپو](https://github.com/ElhamBidarigh/securAI-active-scanner) |
+| 🔌 MCP Scanner | CLI (پایتون) | همین‌جایی که هستی |
 
 ## ساختار پروژه
 

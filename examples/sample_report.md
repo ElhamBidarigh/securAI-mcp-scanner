@@ -5,7 +5,7 @@
 # MCP Server Security Assessment
 ### Prepared for: Acme AI Solutions (Sample / Demo Client)
 **Target:** examples/vulnerable_config.json  
-**Scan date:** 2026-09-30  
+**Scan date:** 2026-10-05  
 **Prepared by:** Ellie Bidarigh — elham.bidarigh@gmail.com | linkedin.com/in/elham-bidarigh  
 **Live introspection:** No (static config review only)  
 **LLM semantic review:** No  
@@ -236,4 +236,4 @@ http://internal-search.example.com/mcp
 
 ## Methodology
 
-This assessment was produced with MCP Trust Scanner, a tool combining three layers: (1) static analysis of server launch configuration against known MCP risk patterns (command injection, unpinned supply-chain dependencies, plaintext secrets, overly broad filesystem/network access, missing transport security); (2) heuristic and, where enabled, LLM-based semantic review of every tool description for prompt-injection / tool-poisoning language; and (3) baseline comparison against a prior scan to catch silent changes to tool behavior between reviews ("rug pulls"). Static findings are deterministic. Tool-description findings are pattern/AI-assisted and are marked with a confidence level — treat medium/low confidence findings as leads for manual review, not confirmed exploits.
+This assessment was produced with SecurAI MCP Scanner, a tool combining three layers: (1) static analysis of server launch configuration against known MCP risk patterns (command injection, unpinned supply-chain dependencies, plaintext secrets, overly broad filesystem/network access, missing transport security); (2) heuristic and, where enabled, LLM-based semantic review of every tool description for prompt-injection / tool-poisoning language; and (3) baseline comparison against a prior scan to catch silent changes to tool behavior between reviews ("rug pulls"). Static findings are deterministic. Tool-description findings are pattern/AI-assisted and are marked with a confidence level — treat medium/low confidence findings as leads for manual review, not confirmed exploits.
