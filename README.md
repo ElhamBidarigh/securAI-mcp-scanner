@@ -4,7 +4,7 @@
 
 A security scanner for **MCP (Model Context Protocol)** server configurations and live tool surfaces - the protocol that connects AI agents (Claude, Cursor, VS Code, ChatGPT plugins, etc.) to external tools.
 
-Part of the **[SecurAI toolkit](https://github.com/ElhamBidarigh/securai)** — this is the member of the family that covers the *agent/tool* layer, complementing the others' focus on AI-generated application code.
+Part of the **[SecurAI toolkit](https://github.com/ElhamBidarigh/securai)** - this is the member of the family that covers the *agent/tool* layer, complementing the others' focus on AI-generated application code.
 
 MCP adoption has outpaced its security tooling: independent 2026 audits have found large fractions of public MCP servers vulnerable to command injection and path traversal, with average security scores in the 30s out of 100. This tool gives you a repeatable, scriptable way to check a server before you trust it - and keep checking it, since a server can be clean today and silently different tomorrow.
 
