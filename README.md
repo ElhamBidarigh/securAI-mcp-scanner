@@ -2,17 +2,17 @@
 
 🇮🇷 [راهنمای فارسی](README.fa.md)
 
-A security scanner for **MCP (Model Context Protocol)** server configurations and live tool surfaces — the protocol that connects AI agents (Claude, Cursor, VS Code, ChatGPT plugins, etc.) to external tools.
+A security scanner for **MCP (Model Context Protocol)** server configurations and live tool surfaces - the protocol that connects AI agents (Claude, Cursor, VS Code, ChatGPT plugins, etc.) to external tools.
 
 Part of the **[SecurAI toolkit](https://github.com/ElhamBidarigh/securai)** — this is the member of the family that covers the *agent/tool* layer, complementing the others' focus on AI-generated application code.
 
-MCP adoption has outpaced its security tooling: independent 2026 audits have found large fractions of public MCP servers vulnerable to command injection and path traversal, with average security scores in the 30s out of 100. This tool gives you a repeatable, scriptable way to check a server before you trust it — and keep checking it, since a server can be clean today and silently different tomorrow.
+MCP adoption has outpaced its security tooling: independent 2026 audits have found large fractions of public MCP servers vulnerable to command injection and path traversal, with average security scores in the 30s out of 100. This tool gives you a repeatable, scriptable way to check a server before you trust it - and keep checking it, since a server can be clean today and silently different tomorrow.
 
 ## What it checks
 
-1. **Server configuration (static, no connection needed)** — command injection via shell interpreters, unpinned supply-chain dependencies (`npx -y pkg` with no version), plaintext secrets in config files, overly broad filesystem access (`--allow-all`, root paths), missing transport security on remote servers (plain HTTP, no auth headers).
-2. **Tool descriptions ("tool poisoning")** — every MCP tool has a `description` field the model reads on every turn, whether or not a human ever sees it. This is a live prompt-injection surface. The scanner pattern-matches for instruction-override language, data-exfiltration instructions, tool-routing hijacks, and hidden/invisible Unicode characters used to smuggle text past a UI.
-3. **Drift / "rug pull" detection** — pin a baseline of a server's current tools (name + description + input schema, hashed). Every later scan diffs against it. A tool that silently changes behavior after approval — the core trust-model gap CSA's research flagged in 2026 — shows up as a critical finding instead of going unnoticed.
+1. **Server configuration (static, no connection needed)** - command injection via shell interpreters, unpinned supply-chain dependencies (`npx -y pkg` with no version), plaintext secrets in config files, overly broad filesystem access (`--allow-all`, root paths), missing transport security on remote servers (plain HTTP, no auth headers).
+2. **Tool descriptions ("tool poisoning")** - every MCP tool has a `description` field the model reads on every turn, whether or not a human ever sees it. This is a live prompt-injection surface. The scanner pattern-matches for instruction-override language, data-exfiltration instructions, tool-routing hijacks, and hidden/invisible Unicode characters used to smuggle text past a UI.
+3. **Drift / "rug pull" detection** - pin a baseline of a server's current tools (name + description + input schema, hashed). Every later scan diffs against it. A tool that silently changes behavior after approval - the core trust-model gap CSA's research flagged in 2026 — shows up as a critical finding instead of going unnoticed.
 
 Optionally:
 - **`--live`** connects to the real server (stdio / SSE / streamable-HTTP) via the official `mcp` SDK and pulls its actual, current tool list, rather than trusting what's written in a config file.
@@ -32,7 +32,7 @@ pip install -e ".[live]"        # just live introspection
 pip install -e ".[llm]"         # just the LLM judge
 ```
 
-The core (`config_parser`, `static_checks`, `heuristics`, `baseline`, `report`) has **zero external dependencies** — it runs on stock Python 3.10+, so you can run a static scan on a client's machine without installing anything beyond Python itself.
+The core (`config_parser`, `static_checks`, `heuristics`, `baseline`, `report`) has **zero external dependencies** - it runs on stock Python 3.10+, so you can run a static scan on a client's machine without installing anything beyond Python itself.
 
 ## Quick start
 
@@ -135,11 +135,11 @@ python -m unittest discover -s tests -v
 
 ## Contributing
 
-Issues and PRs welcome — especially new detection rules (`CFG-*` for config patterns, `TDX-*` for tool-description patterns) backed by a real-world example.
+Issues and PRs welcome - especially new detection rules (`CFG-*` for config patterns, `TDX-*` for tool-description patterns) backed by a real-world example.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
 
 ## Author
 
