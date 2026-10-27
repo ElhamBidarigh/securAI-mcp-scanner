@@ -68,7 +68,7 @@ def to_markdown(
     # Executive summary
     lines.append("## Executive Summary")
     lines.append("")
-    lines.append(f"**Overall risk score: {score}/100 — {label}**")
+    lines.append(f"**Heuristic security score (higher is better): {score}/100 — {label}**")
     lines.append("")
     lines.append(
         f"This assessment reviewed {len(result.servers)} MCP server "
@@ -81,11 +81,11 @@ def to_markdown(
     lines.append("")
     lines.append("| Severity | Count | Meaning |")
     lines.append("|---|---|---|")
-    lines.append(f"| 🔴 Critical | {counts['critical']} | Exploitable now; fix before continued use |")
+    lines.append(f"| 🔴 Critical | {counts['critical']} | Urgent review; exploitability is not established by a static scan |")
     lines.append(f"| 🟠 High | {counts['high']} | Significant exposure; fix this week |")
     lines.append(f"| 🟡 Medium | {counts['medium']} | Real risk; schedule a fix |")
     lines.append(f"| 🔵 Low | {counts['low']} | Minor / defense-in-depth |")
-    lines.append(f"| ⚪ Info | {counts['info']} | No action required |")
+    lines.append(f"| ⚪ Info | {counts['info']} | Context or scan limitation; review the finding |")
     lines.append("")
 
     if counts["critical"] > 0:

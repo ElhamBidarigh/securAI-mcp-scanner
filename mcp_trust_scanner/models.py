@@ -107,7 +107,7 @@ class ScanResult:
         return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def risk_score(self) -> int:
-        """0-100, 100 = worst. Sum of severity weights, capped."""
+        """0-100 heuristic security score; 100 means no weighted findings, not proof of safety."""
         raw = sum(f.severity.weight for f in self.findings)
         return max(0, 100 - raw) if raw <= 100 else 0
 

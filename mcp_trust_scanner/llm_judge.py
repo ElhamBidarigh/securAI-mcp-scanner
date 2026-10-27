@@ -88,8 +88,15 @@ def judge_tools(tools: list[ToolInfo], api_key: str) -> list[JudgeVerdict]:
     except json.JSONDecodeError as e:
         raise LLMJudgeError(f"Judge returned non-JSON output: {e}\nRaw: {text[:300]}") from e
 
+    if not isinstance(raw, list) or len(raw) != len(tools):
+        raise LLMJudgeError("Judge must return exactly one verdict per tool")
     verdicts = []
-    for item in raw:
+    for expected, item in zip(tools, raw):
+        if (not isinstance(item, dict)
+                or item.get("tool_name") != expected.name
+                or item.get("verdict") not in {"malicious", "suspicious", "benign"}
+                or not isinstance(item.get("reasoning"), str)):
+            raise LLMJudgeError("Judge returned an invalid or mismatched verdict")
         verdicts.append(
             JudgeVerdict(
                 tool_name=item.get("tool_name", "<unknown>"),

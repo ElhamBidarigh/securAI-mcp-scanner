@@ -12,7 +12,7 @@ import argparse
 import os
 import sys
 
-from .baseline import diff_against_baseline, save_baseline
+from .baseline import diff_against_baseline, save_baseline, BaselineError
 from .config_parser import parse_config_file, ConfigParseError
 from .heuristics import run_heuristic_checks
 from .models import Finding, ScanResult, Severity, ServerInfo
@@ -89,6 +89,7 @@ def _scan_one_server(
 
         try:
             live_tools = fetch_live_tools(server, timeout=args.live_timeout)
+            server._live_completed = True
             server.tools = live_tools  # live data supersedes whatever the config claimed
         except LiveConnectError as e:
             findings.append(
@@ -123,6 +124,7 @@ def _scan_one_server(
         else:
             try:
                 findings.extend(run_llm_judge(server, api_key))
+                server._llm_completed = True
             except LLMJudgeError as e:
                 findings.append(
                     Finding(
@@ -138,8 +140,6 @@ def _scan_one_server(
     if not args.no_drift_check:
         findings.extend(diff_against_baseline(server, args.baseline_dir))
 
-    if args.pin:
-        save_baseline(args.baseline_dir, server)
 
     return server, findings
 
@@ -153,26 +153,36 @@ def cmd_scan(args: argparse.Namespace) -> int:
 
     all_findings: list[Finding] = []
     resolved_servers: list[ServerInfo] = []
-    live_used = False
-    llm_used = False
 
     for server in servers:
-        resolved, findings = _scan_one_server(server, args)
+        try:
+            resolved, findings = _scan_one_server(server, args)
+        except (BaselineError, OSError) as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 2
         resolved_servers.append(resolved)
         all_findings.extend(findings)
-        if args.live:
-            live_used = True
-        if args.llm_judge:
-            llm_used = True
 
     result = ScanResult(
         scanned_at=ScanResult.now_iso(),
         target_label=args.config,
         servers=resolved_servers,
         findings=all_findings,
-        llm_judge_used=llm_used,
-        live_introspection_used=live_used,
+        llm_judge_used=bool(args.llm_judge and all(getattr(s, "_llm_completed", False) for s in resolved_servers if s.tools)),
+        live_introspection_used=bool(args.live and all(getattr(s, "_live_completed", False) for s in resolved_servers)),
     )
+
+    incomplete = any(f.id in {"LIVE-001", "LLM-000"} for f in all_findings)
+    gate_failed = args.fail_on and any(
+        f.severity in set(_severity_at_or_above(args.fail_on)) for f in all_findings
+    )
+    if args.pin and not incomplete and not gate_failed:
+        try:
+            for server in resolved_servers:
+                save_baseline(args.baseline_dir, server)
+        except OSError as e:
+            print(f"error: could not save baseline: {e}", file=sys.stderr)
+            return 2
 
     md = to_markdown(
         result,
@@ -203,9 +213,12 @@ def cmd_scan(args: argparse.Namespace) -> int:
             print(f"[mcp-trust-scanner] Markdown report written to {args.out}", file=sys.stderr)
         if args.json_out:
             print(f"[mcp-trust-scanner] JSON report written to {args.json_out}", file=sys.stderr)
-        if args.pin:
+        if args.pin and not incomplete and not gate_failed:
             print(f"[mcp-trust-scanner] Baseline(s) pinned to {args.baseline_dir}", file=sys.stderr)
 
+    if incomplete:
+        print("error: requested scan layers did not complete; baseline was not updated", file=sys.stderr)
+        return 2
     if args.fail_on:
         threshold_set = set(_severity_at_or_above(args.fail_on))
         if any(f.severity in threshold_set for f in all_findings):
@@ -218,7 +231,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.command == "scan":
-        return cmd_scan(args)
+        if args.live_timeout <= 0:
+            parser.error("--live-timeout must be greater than zero")
+        try:
+            return cmd_scan(args)
+        except (OSError, BaselineError) as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 2
     parser.print_help()
     return 1
 

@@ -17,6 +17,7 @@ baseline directory into git, review baseline changes like code changes).
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -29,6 +30,8 @@ class BaselineError(Exception):
 
 def baseline_path(baseline_dir: str, server_name: str) -> Path:
     safe_name = "".join(c if c.isalnum() or c in "-_." else "_" for c in server_name)
+    if safe_name != server_name or safe_name in {"", ".", ".."}:
+        safe_name += "-" + hashlib.sha256(server_name.encode()).hexdigest()[:12]
     return Path(baseline_dir) / f"{safe_name}.json"
 
 
@@ -52,8 +55,14 @@ def load_baseline(baseline_dir: str, server_name: str) -> dict[str, Any] | None:
     if not path.exists():
         return None
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as e:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if (not isinstance(data, dict) or data.get("server_name") != server_name
+                or not isinstance(data.get("tools"), dict)
+                or any(not isinstance(t, dict) or not isinstance(t.get("fingerprint"), str)
+                       for t in data["tools"].values())):
+            raise BaselineError(f"Invalid baseline structure: {path}")
+        return data
+    except (OSError, UnicodeError, json.JSONDecodeError) as e:
         raise BaselineError(f"Corrupt baseline file {path}: {e}") from e
 
 
@@ -66,6 +75,17 @@ def diff_against_baseline(server: ServerInfo, baseline_dir: str) -> list[Finding
         return []
 
     findings: list[Finding] = []
+    changed = [key for key, value in {
+        "transport": server.transport, "command": server.command,
+        "args": server.args, "url": server.url,
+    }.items() if baseline.get(key) != value]
+    if changed:
+        findings.append(Finding(
+            id="DRIFT-004", title="Server connection or launch configuration changed",
+            severity=Severity.HIGH, category="drift", server_name=server.name,
+            description="Changed fields: " + ", ".join(changed),
+            recommendation="Review the launch target and permissions before approving a new baseline.",
+        ))
     old_tools: dict[str, dict[str, Any]] = baseline.get("tools", {})
     current_names = {t.name for t in server.tools}
     old_names = set(old_tools.keys())
