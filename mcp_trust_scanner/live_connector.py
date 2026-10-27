@@ -21,6 +21,21 @@ from .models import ServerInfo, ToolInfo
 
 DEFAULT_TIMEOUT_SECONDS = 20
 
+async def _list_all_tools(session) -> list[ToolInfo]:
+    tools = []
+    cursor = None
+    seen = set()
+    while True:
+        result = await session.list_tools(cursor=cursor) if cursor else await session.list_tools()
+        tools.extend(_tool_info_from_sdk_tool(t) for t in result.tools)
+        cursor = getattr(result, "nextCursor", None) or getattr(result, "next_cursor", None)
+        if not cursor:
+            return tools
+        if cursor in seen:
+            raise LiveConnectError("Server repeated a pagination cursor")
+        seen.add(cursor)
+
+
 
 class LiveConnectError(Exception):
     pass
@@ -60,8 +75,7 @@ async def _fetch_tools_stdio(server: ServerInfo, timeout: float) -> list[ToolInf
             read, write = await stack.enter_async_context(stdio_client(params))
             session: "ClientSession" = await stack.enter_async_context(ClientSession(read, write))
             await session.initialize()
-            result = await session.list_tools()
-            return [_tool_info_from_sdk_tool(t) for t in result.tools]
+            return await _list_all_tools(session)
 
     return await asyncio.wait_for(_run(), timeout=timeout)
 
@@ -85,7 +99,11 @@ async def _fetch_tools_http(server: ServerInfo, timeout: float) -> list[ToolInfo
 
             http_client = httpx2.AsyncClient(headers=server.headers)
         except ImportError:
-            pass
+            try:
+                import httpx
+                http_client = httpx.AsyncClient(headers=server.headers)
+            except ImportError as exc:
+                raise LiveConnectError("No compatible HTTP client is available for configured headers") from exc
 
     async def _run() -> list[ToolInfo]:
         async with AsyncExitStack() as stack:
@@ -95,8 +113,7 @@ async def _fetch_tools_http(server: ServerInfo, timeout: float) -> list[ToolInfo
             )
             session: "ClientSession" = await stack.enter_async_context(ClientSession(read, write))
             await session.initialize()
-            result = await session.list_tools()
-            return [_tool_info_from_sdk_tool(t) for t in result.tools]
+            return await _list_all_tools(session)
 
     try:
         return await asyncio.wait_for(_run(), timeout=timeout)
@@ -124,8 +141,7 @@ async def _fetch_tools_sse(server: ServerInfo, timeout: float) -> list[ToolInfo]
             )
             session: "ClientSession" = await stack.enter_async_context(ClientSession(read, write))
             await session.initialize()
-            result = await session.list_tools()
-            return [_tool_info_from_sdk_tool(t) for t in result.tools]
+            return await _list_all_tools(session)
 
     return await asyncio.wait_for(_run(), timeout=timeout)
 

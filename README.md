@@ -6,7 +6,9 @@ A security scanner for **MCP (Model Context Protocol)** server configurations an
 
 Part of the **[SecurAI toolkit](https://github.com/ElhamBidarigh/securai)** - this is the member of the family that covers the *agent/tool* layer, complementing the others' focus on AI-generated application code.
 
-MCP adoption has outpaced its security tooling: independent 2026 audits have found large fractions of public MCP servers vulnerable to command injection and path traversal, with average security scores in the 30s out of 100. This tool gives you a repeatable, scriptable way to check a server before you trust it - and keep checking it, since a server can be clean today and silently different tomorrow.
+This experimental scanner checks configuration and advertised tool metadata. It does not prove
+server exploitability or inspect server source code. No false-positive reduction benchmark has
+been measured for the optional semantic judge.
 
 ## What it checks
 
@@ -124,7 +126,8 @@ examples/
   sample_report.md        Full example report generated from it
   toy_server.py            Minimal real MCP server, used to test --live end-to-end
 tests/
-  test_scanner.py          18 unit tests covering the dependency-free core
+  test_scanner.py          Core tests
+  test_regressions.py      Invalid input, incomplete scans, baseline and pagination regressions
 ```
 
 ## Running the tests
@@ -144,3 +147,15 @@ MIT - see [LICENSE](LICENSE).
 ## Author
 
 Built by [Ellie Bidarigh](https://www.linkedin.com/in/elham-bidarigh/), a full-stack engineer moving into AI/agent security.
+
+## Scan completion and baseline safety
+
+Exit codes: 0 = completed with no requested severity gate hit; 1 = severity gate hit;
+2 = invalid input, baseline/output error, or a requested live/LLM layer failed.
+Failed live/LLM layers are not reported as completed. `--pin` does not update baselines when
+requested layers fail or `--fail-on` rejects findings. Baseline comparison also detects changed
+launch commands, arguments, transport or endpoint, in addition to tool definitions.
+
+`--live` starts the configured local process or contacts the configured endpoint: inspect and trust
+the configuration before using it. It is not a sandbox. `--llm-judge` sends tool metadata to Anthropic.
+A score of 100 means no weighted findings were emitted; it is not proof of safety.
