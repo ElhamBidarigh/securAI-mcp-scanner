@@ -47,7 +47,7 @@ def to_markdown(
     consultant_contact: str = "",
 ) -> str:
     counts = result.counts_by_severity()
-    score = result.risk_score()
+    score = result.security_score()
     label = _risk_label(score)
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
@@ -58,7 +58,7 @@ def to_markdown(
     lines.append(f"**Target:** {result.target_label}  ")
     lines.append(f"**Scan date:** {generated}  ")
     if consultant_name:
-        lines.append(f"**Prepared by:** {consultant_name}" + (f" — {consultant_contact}" if consultant_contact else "") + "  ")
+        lines.append(f"**Prepared by:** {consultant_name}" + (f" - {consultant_contact}" if consultant_contact else "") + "  ")
     lines.append(f"**Live introspection:** {'Yes' if result.live_introspection_used else 'No (static config review only)'}  ")
     lines.append(f"**LLM semantic review:** {'Yes' if result.llm_judge_used else 'No'}  ")
     lines.append("")
@@ -68,14 +68,14 @@ def to_markdown(
     # Executive summary
     lines.append("## Executive Summary")
     lines.append("")
-    lines.append(f"**Heuristic security score (higher is better): {score}/100 — {label}**")
+    lines.append(f"**Heuristic security score (higher is better): {score}/100 - {label}**")
     lines.append("")
     lines.append(
         f"This assessment reviewed {len(result.servers)} MCP server "
         f"configuration(s){' and its live tool surface' if result.live_introspection_used else ''}, "
         "covering three layers: the server launch configuration (how it's invoked, what "
         "access it's granted), the tool descriptions it exposes to the AI agent (which can "
-        "carry hidden prompt-injection instructions), and — where a prior baseline existed — "
+        "carry hidden prompt-injection instructions), and - where a prior baseline existed - "
         "whether anything changed silently since the last review."
     )
     lines.append("")
@@ -105,7 +105,7 @@ def to_markdown(
         emoji = _SEVERITY_EMOJI[f.severity]
         lines.append(f"| {i} | {emoji} {f.severity.value.title()} | {f.server_name} | {f.title} | {f.category} |")
     if not sorted_findings:
-        lines.append("| — | — | — | No findings. | — |")
+        lines.append("| - | - | - | No findings. | - |")
     lines.append("")
 
     # Server inventory
@@ -163,7 +163,7 @@ def to_markdown(
         "(3) baseline comparison against a prior scan to catch silent changes to tool behavior "
         "between reviews (\"rug pulls\"). "
         "Static findings are deterministic. Tool-description findings are pattern/AI-assisted "
-        "and are marked with a confidence level — treat medium/low confidence findings as leads "
+        "and are marked with a confidence level - treat medium/low confidence findings as leads "
         "for manual review, not confirmed exploits."
     )
     lines.append("")

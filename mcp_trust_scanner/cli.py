@@ -206,7 +206,7 @@ def cmd_scan(args: argparse.Namespace) -> int:
             f"\n[mcp-trust-scanner] {len(resolved_servers)} server(s) scanned, "
             f"{len(all_findings)} finding(s) -- "
             f"critical={counts['critical']} high={counts['high']} medium={counts['medium']} "
-            f"low={counts['low']} info={counts['info']} -- risk score {result.risk_score()}/100",
+            f"low={counts['low']} info={counts['info']} -- security score {result.security_score()}/100",
             file=sys.stderr,
         )
         if args.out:

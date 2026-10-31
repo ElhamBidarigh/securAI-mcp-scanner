@@ -5,8 +5,8 @@
 # MCP Server Security Assessment
 ### Prepared for: Acme AI Solutions (Sample / Demo Client)
 **Target:** examples/vulnerable_config.json  
-**Scan date:** 2026-10-05  
-**Prepared by:** Ellie Bidarigh — elham.bidarigh@gmail.com | linkedin.com/in/elham-bidarigh  
+**Scan date:** 2026-10-31  
+**Prepared by:** Ellie Bidarigh - elham.bidarigh@gmail.com | linkedin.com/in/elham-bidarigh  
 **Live introspection:** No (static config review only)  
 **LLM semantic review:** No  
 
@@ -14,17 +14,17 @@
 
 ## Executive Summary
 
-**Overall risk score: 0/100 — Critical risk**
+**Heuristic security score (higher is better): 0/100 - Critical risk**
 
-This assessment reviewed 4 MCP server configuration(s), covering three layers: the server launch configuration (how it's invoked, what access it's granted), the tool descriptions it exposes to the AI agent (which can carry hidden prompt-injection instructions), and — where a prior baseline existed — whether anything changed silently since the last review.
+This assessment reviewed 4 MCP server configuration(s), covering three layers: the server launch configuration (how it's invoked, what access it's granted), the tool descriptions it exposes to the AI agent (which can carry hidden prompt-injection instructions), and - where a prior baseline existed - whether anything changed silently since the last review.
 
 | Severity | Count | Meaning |
 |---|---|---|
-| 🔴 Critical | 3 | Exploitable now; fix before continued use |
+| 🔴 Critical | 3 | Urgent review; exploitability is not established by a static scan |
 | 🟠 High | 6 | Significant exposure; fix this week |
 | 🟡 Medium | 0 | Real risk; schedule a fix |
 | 🔵 Low | 0 | Minor / defense-in-depth |
-| ⚪ Info | 0 | No action required |
+| ⚪ Info | 0 | Context or scan limitation; review the finding |
 
 **3 critical finding(s) require action before this MCP setup should be considered trustworthy for production or client-facing use.**
 
@@ -153,7 +153,7 @@ npx -y @example/file-helper-mcp --allow-all /
 
 **Evidence:**
 ```
-env.OPENAI_API_KEY = sk-pro******************************************
+env.OPENAI_API_KEY = sk-FAK********************************
 ```
 
 **Recommendation:** Reference an environment variable (e.g. "${OPENAI_API_KEY}") or a secrets manager instead of a literal value; rotate this credential since it may already be exposed.
@@ -236,4 +236,4 @@ http://internal-search.example.com/mcp
 
 ## Methodology
 
-This assessment was produced with SecurAI MCP Scanner, a tool combining three layers: (1) static analysis of server launch configuration against known MCP risk patterns (command injection, unpinned supply-chain dependencies, plaintext secrets, overly broad filesystem/network access, missing transport security); (2) heuristic and, where enabled, LLM-based semantic review of every tool description for prompt-injection / tool-poisoning language; and (3) baseline comparison against a prior scan to catch silent changes to tool behavior between reviews ("rug pulls"). Static findings are deterministic. Tool-description findings are pattern/AI-assisted and are marked with a confidence level — treat medium/low confidence findings as leads for manual review, not confirmed exploits.
+This assessment was produced with SecurAI MCP Scanner, a tool combining three layers: (1) static analysis of server launch configuration against known MCP risk patterns (command injection, unpinned supply-chain dependencies, plaintext secrets, overly broad filesystem/network access, missing transport security); (2) heuristic and, where enabled, LLM-based semantic review of every tool description for prompt-injection / tool-poisoning language; and (3) baseline comparison against a prior scan to catch silent changes to tool behavior between reviews ("rug pulls"). Static findings are deterministic. Tool-description findings are pattern/AI-assisted and are marked with a confidence level - treat medium/low confidence findings as leads for manual review, not confirmed exploits.

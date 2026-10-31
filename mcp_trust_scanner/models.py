@@ -106,7 +106,7 @@ class ScanResult:
     def now_iso() -> str:
         return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    def risk_score(self) -> int:
+    def security_score(self) -> int:
         """0-100 heuristic security score; 100 means no weighted findings, not proof of safety."""
         raw = sum(f.severity.weight for f in self.findings)
         return max(0, 100 - raw) if raw <= 100 else 0
@@ -123,7 +123,7 @@ class ScanResult:
             "target_label": self.target_label,
             "llm_judge_used": self.llm_judge_used,
             "live_introspection_used": self.live_introspection_used,
-            "risk_score": self.risk_score(),
+            "security_score": self.security_score(),
             "counts_by_severity": self.counts_by_severity(),
             "servers": [
                 {

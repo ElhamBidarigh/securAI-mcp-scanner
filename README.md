@@ -1,5 +1,7 @@
 # 🔌 SecurAI MCP Scanner
 
+[![Regression](https://github.com/ElhamBidarigh/securAI-mcp-scanner/actions/workflows/regression.yml/badge.svg)](https://github.com/ElhamBidarigh/securAI-mcp-scanner/actions/workflows/regression.yml)
+
 🇮🇷 [راهنمای فارسی](README.fa.md)
 
 A security scanner for **MCP (Model Context Protocol)** server configurations and live tool surfaces - the protocol that connects AI agents (Claude, Cursor, VS Code, ChatGPT plugins, etc.) to external tools.
@@ -14,7 +16,7 @@ been measured for the optional semantic judge.
 
 1. **Server configuration (static, no connection needed)** - command injection via shell interpreters, unpinned supply-chain dependencies (`npx -y pkg` with no version), plaintext secrets in config files, overly broad filesystem access (`--allow-all`, root paths), missing transport security on remote servers (plain HTTP, no auth headers).
 2. **Tool descriptions ("tool poisoning")** - every MCP tool has a `description` field the model reads on every turn, whether or not a human ever sees it. This is a live prompt-injection surface. The scanner pattern-matches for instruction-override language, data-exfiltration instructions, tool-routing hijacks, and hidden/invisible Unicode characters used to smuggle text past a UI.
-3. **Drift / "rug pull" detection** - pin a baseline of a server's current tools (name + description + input schema, hashed). Every later scan diffs against it. A tool that silently changes behavior after approval - the core trust-model gap CSA's research flagged in 2026 — shows up as a critical finding instead of going unnoticed.
+3. **Drift / "rug pull" detection** - pin a baseline of a server's current tools (name + description + input schema, hashed). Every later scan diffs against it. A tool that silently changes behavior after approval - the core trust-model gap CSA's research flagged in 2026 - shows up as a critical finding instead of going unnoticed.
 
 Optionally:
 - **`--live`** connects to the real server (stdio / SSE / streamable-HTTP) via the official `mcp` SDK and pulls its actual, current tool list, rather than trusting what's written in a config file.
@@ -64,7 +66,7 @@ mcp-trust-scanner scan CONFIG.json [options]
 | `--client-name NAME` | Name printed on the report header |
 | `--consultant-name NAME` | Your name, printed on the report header |
 | `--consultant-contact C` | Your email/site, printed on the report header |
-| `--fail-on SEVERITY` | Exit non-zero if any finding at/above this severity exists — useful in CI |
+| `--fail-on SEVERITY` | Exit non-zero if any finding at/above this severity exists - useful in CI |
 | `--quiet` | Suppress the console summary line |
 
 ### Typical config file locations
@@ -99,6 +101,22 @@ python -m mcp_trust_scanner.cli scan .mcp.json --fail-on high
 
 This fails the build if a tool's description/schema changed since the last approved baseline, or if any new high/critical config issue shows up.
 
+## Related work
+
+This is a small, focused tool and not the only MCP scanner. For a more mature multi-engine scanner, look at
+[Cisco AI Defense mcp-scanner](https://github.com/cisco-ai-defense/mcp-scanner), which combines YARA rules,
+an LLM judge and an optional Cisco API, and offers a REST API and an SDK. Other open-source MCP scanners
+exist as well, for example MCPFang and Ramparts.
+
+What this project aims to do differently (design goals, not benchmark results):
+
+- A dependency-free core, so a static scan runs on stock Python with nothing to install.
+- Baseline pinning and diffing, to catch a server that changes its tools after you approved it.
+- A client-ready Markdown report written for non-technical readers, next to the JSON output.
+
+Other tools may offer similar features. No benchmark of detection quality against them has been run, so
+compare before you choose, and combine tools where it makes sense.
+
 ## The full SecurAI toolkit
 
 | Tool | Type | Link |
@@ -108,6 +126,7 @@ This fails the build if a tool's description/schema changed since the last appro
 | 🔐 JWT Analyzer | CLI (Python) | [Repo](https://github.com/ElhamBidarigh/jwt-analyzer) |
 | 🔍 Active Scanner | Live URL scanner (PHP) | [Repo](https://github.com/ElhamBidarigh/securAI-active-scanner) |
 | 🔌 MCP Scanner | CLI (Python) | You are here |
+| 🧪 Prompt Tester | CLI (Python) | [Repo](https://github.com/ElhamBidarigh/securAI-prompt-tester) |
 
 ## Project layout
 

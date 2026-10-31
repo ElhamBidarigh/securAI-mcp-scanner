@@ -126,6 +126,22 @@ mcp-trust-scanner scan CONFIG.json
   --quiet                   حذف خط خلاصه از stderr
 ```
 
+## کارهای مشابه
+
+این یک ابزار کوچک و متمرکز است و تنها اسکنر MCP نیست. برای اسکنر چندموتوره‌ی بالغ‌تر به
+[Cisco AI Defense mcp-scanner](https://github.com/cisco-ai-defense/mcp-scanner) نگاه کن که قوانین YARA،
+داور LLM و یک API اختیاری سیسکو را ترکیب می‌کند و REST API و SDK هم دارد. اسکنرهای متن‌باز دیگری هم هستند،
+مثلاً MCPFang و Ramparts.
+
+آنچه این پروژه می‌خواهد متفاوت انجام دهد (هدف‌های طراحی، نه نتیجه‌ی benchmark):
+
+- هسته‌ی بدون وابستگی، تا اسکن استاتیک روی پایتون خام و بدون نصب چیزی اجرا شود.
+- pin و diff کردن baseline، برای گرفتن سروری که بعد از تأیید تو ابزارهایش را عوض می‌کند.
+- گزارش Markdown آماده‌ی مشتری برای خواننده‌ی غیرفنی، کنار خروجی JSON.
+
+ابزارهای دیگر ممکن است ویژگی‌های مشابه داشته باشند. کیفیت تشخیص با آن‌ها benchmark نشده، پس قبل از انتخاب
+مقایسه کن و هر جا منطقی بود ابزارها را با هم به‌کار ببر.
+
 ## مجموعه‌ی کامل SecurAI
 
 | ابزار | نوع | لینک |
@@ -135,6 +151,7 @@ mcp-trust-scanner scan CONFIG.json
 | 🔐 JWT Analyzer | CLI (پایتون) | [ریپو](https://github.com/ElhamBidarigh/jwt-analyzer) |
 | 🔍 Active Scanner | اسکنر URL زنده (PHP) | [ریپو](https://github.com/ElhamBidarigh/securAI-active-scanner) |
 | 🔌 MCP Scanner | CLI (پایتون) | همین‌جایی که هستی |
+| 🧪 Prompt Tester | CLI (پایتون) | [ریپو](https://github.com/ElhamBidarigh/securAI-prompt-tester) |
 
 ## ساختار پروژه
 
@@ -154,7 +171,7 @@ examples/
   toy_server.py           یک سرور واقعی و کوچک MCP، فقط برای تست --live
 ```
 
-هسته‌ی ابزار (`config_parser` + `static_checks` + `heuristics` + `report`) **هیچ وابستگی خارجی‌ای ندارد** — فقط پایتون استاندارد. یعنی می‌توانی همین را روی ماشین مشتری هم بدون نصب چیزی اجرا کنی، فقط `python3` لازم است.
+هسته‌ی ابزار (`config_parser` + `static_checks` + `heuristics` + `report`) **هیچ وابستگی خارجی‌ای ندارد** - فقط پایتون استاندارد. یعنی می‌توانی همین را روی ماشین مشتری هم بدون نصب چیزی اجرا کنی، فقط `python3` لازم است.
 
 ---
 

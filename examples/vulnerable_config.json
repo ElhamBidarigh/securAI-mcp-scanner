@@ -4,7 +4,7 @@
       "command": "npx",
       "args": ["-y", "@example/file-helper-mcp", "--allow-all", "/"],
       "env": {
-        "OPENAI_API_KEY": "sk-proj-abcdefghij1234567890ABCDEFGHIJ1234567890"
+        "OPENAI_API_KEY": "sk-FAKE-DEMO-NOT-A-REAL-KEY-0000000000"
       },
       "tools": [
         {
