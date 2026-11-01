@@ -1,0 +1,22 @@
+name: Self scan (manual)
+
+# Manual check that the bundled GitHub Action works end to end.
+# Run it from the Actions tab: "Self scan (manual)" then "Run workflow".
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan the demo config (never fails the job, it is intentionally vulnerable)
+        uses: ./
+        with:
+          config-path: examples/vulnerable_config.json
+          fail-on: none
+          upload-sarif: "true"

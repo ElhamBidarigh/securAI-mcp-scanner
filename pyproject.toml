@@ -1,13 +1,33 @@
 [build-system]
-requires = ["setuptools>=68.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "securai-mcp-scanner"
-version = "0.1.0"
+version = "0.2.0"
 description = "Security scanner for Model Context Protocol (MCP) server configs and live tool surfaces. Part of the SecurAI toolkit."
+readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{name = "Ellie Bidarigh"}]
+keywords = ["mcp", "model-context-protocol", "ai-security", "llm-security", "prompt-injection", "sarif", "security-scanner"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Environment :: Console",
+]
+
+[project.urls]
+Homepage = "https://github.com/ElhamBidarigh/securAI-mcp-scanner"
+Issues = "https://github.com/ElhamBidarigh/securAI-mcp-scanner/issues"
+Changelog = "https://github.com/ElhamBidarigh/securAI-mcp-scanner/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 live = ["mcp>=1.0.0"]

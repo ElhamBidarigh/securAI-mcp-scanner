@@ -16,7 +16,9 @@ from .baseline import diff_against_baseline, save_baseline, BaselineError
 from .config_parser import parse_config_file, ConfigParseError
 from .heuristics import run_heuristic_checks
 from .models import Finding, ScanResult, Severity, ServerInfo
+from . import __version__
 from .report import to_json, to_markdown
+from .sarif import to_sarif_json
 from .static_checks import run_static_checks
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO]
@@ -32,6 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="mcp-trust-scanner",
         description="Security scanner for Model Context Protocol (MCP) server configs and live tool surfaces.",
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
     scan = sub.add_parser("scan", help="Scan one MCP config file.")
@@ -63,6 +66,10 @@ def build_parser() -> argparse.ArgumentParser:
     scan.add_argument("--no-drift-check", action="store_true", help="Skip comparing against any saved baseline.")
     scan.add_argument("--out", default=None, help="Write the Markdown report to this path (also prints to stdout if omitted).")
     scan.add_argument("--json-out", default=None, help="Also write the machine-readable JSON report to this path.")
+    scan.add_argument(
+        "--sarif-out", default=None,
+        help="Also write a SARIF 2.1.0 file (for GitHub Code Scanning and other SARIF viewers).",
+    )
     scan.add_argument("--client-name", default="", help="Client/organization name to print on the report header.")
     scan.add_argument("--consultant-name", default="", help="Your name, printed on the report header.")
     scan.add_argument("--consultant-contact", default="", help="Your email/site, printed on the report header.")
@@ -197,6 +204,9 @@ def cmd_scan(args: argparse.Namespace) -> int:
     if args.json_out:
         with open(args.json_out, "w", encoding="utf-8") as f:
             f.write(to_json(result))
+    if args.sarif_out:
+        with open(args.sarif_out, "w", encoding="utf-8") as f:
+            f.write(to_sarif_json(result, args.config, __version__))
     if not args.out:
         print(md)
 
@@ -213,6 +223,8 @@ def cmd_scan(args: argparse.Namespace) -> int:
             print(f"[mcp-trust-scanner] Markdown report written to {args.out}", file=sys.stderr)
         if args.json_out:
             print(f"[mcp-trust-scanner] JSON report written to {args.json_out}", file=sys.stderr)
+        if args.sarif_out:
+            print(f"[mcp-trust-scanner] SARIF report written to {args.sarif_out}", file=sys.stderr)
         if args.pin and not incomplete and not gate_failed:
             print(f"[mcp-trust-scanner] Baseline(s) pinned to {args.baseline_dir}", file=sys.stderr)
 

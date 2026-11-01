@@ -106,6 +106,16 @@ python -m mcp_trust_scanner.cli scan client_config.json --fail-on high
 
 `--fail-on high` باعث می‌شود دستور با کد خروجی غیرصفر تمام شود اگر یافته‌ای با شدت High یا بالاتر پیدا شود - یعنی می‌توانی این را در GitHub Actions بگذاری تا هر تغییر خطرناک در MCP جلوی merge را بگیرد.
 
+## SARIF و GitHub Action
+
+```bash
+mcp-trust-scanner scan .mcp.json --sarif-out results.sarif
+```
+
+SARIF قالب استاندارد نتایج تحلیل ایستاست. اگر آن را در گیت‌هاب آپلود کنی، یافته‌ها در تب **Security > Code scanning** و روی pull requestها دیده می‌شوند.
+
+همین ریپو یک GitHub Action قابل‌استفاده هم هست: ابزار را نصب می‌کند، کانفیگ را اسکن می‌کند، SARIF را آپلود می‌کند، گزارش را در خلاصه‌ی job می‌گذارد و اگر یافته‌ای به آستانه برسد job را رد می‌کند. نمونه‌ی کامل workflow و جدول ورودی‌ها در [README انگلیسی](README.md) آمده است.
+
 ## همه‌ی گزینه‌های خط فرمان
 
 ```
@@ -119,6 +129,7 @@ mcp-trust-scanner scan CONFIG.json
   --no-drift-check          رد کردن مقایسه با baseline
   --out FILE.md             ذخیره‌ی گزارش Markdown
   --json-out FILE.json      ذخیره‌ی گزارش JSON
+  --sarif-out FILE.sarif    ذخیره‌ی خروجی SARIF برای GitHub Code Scanning
   --client-name NAME        نام مشتری در سربرگ گزارش
   --consultant-name NAME    نام تو در سربرگ گزارش
   --consultant-contact C    ایمیل/سایت تو در سربرگ گزارش

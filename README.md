@@ -36,6 +36,12 @@ pip install -e ".[live]"        # just live introspection
 pip install -e ".[llm]"         # just the LLM judge
 ```
 
+To install straight from GitHub without cloning:
+
+```bash
+pip install "git+https://github.com/ElhamBidarigh/securAI-mcp-scanner.git"
+```
+
 The core (`config_parser`, `static_checks`, `heuristics`, `baseline`, `report`) has **zero external dependencies** - it runs on stock Python 3.10+, so you can run a static scan on a client's machine without installing anything beyond Python itself.
 
 ## Quick start
@@ -63,6 +69,7 @@ mcp-trust-scanner scan CONFIG.json [options]
 | `--no-drift-check` | Skip comparing against a saved baseline |
 | `--out FILE.md` | Write the Markdown report to a file |
 | `--json-out FILE.json` | Also write a machine-readable JSON report |
+| `--sarif-out FILE.sarif` | Also write a SARIF 2.1.0 file for GitHub Code Scanning |
 | `--client-name NAME` | Name printed on the report header |
 | `--consultant-name NAME` | Your name, printed on the report header |
 | `--consultant-contact C` | Your email/site, printed on the report header |
@@ -100,6 +107,47 @@ python -m mcp_trust_scanner.cli scan .mcp.json --fail-on high
 ```
 
 This fails the build if a tool's description/schema changed since the last approved baseline, or if any new high/critical config issue shows up.
+
+## SARIF and GitHub Code Scanning
+
+```bash
+mcp-trust-scanner scan .mcp.json --sarif-out results.sarif
+```
+
+SARIF is the standard format for static analysis results. Uploaded to GitHub, the findings appear in the repository's **Security > Code scanning** tab and as annotations on pull requests. Each rule id (`CFG-003`, `TDX-002`, ...) becomes a SARIF rule, severity maps to the alert level, and the location is the line where the server is declared in the config file.
+
+## GitHub Action
+
+This repository is also a reusable GitHub Action. It installs the scanner, scans a config file, uploads the SARIF file to Code Scanning, writes the report to the job summary, and fails the job when a finding reaches the threshold.
+
+```yaml
+name: MCP scan
+on: [push, pull_request]
+
+permissions:
+  contents: read
+  security-events: write   # needed to upload to Code Scanning
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ElhamBidarigh/securAI-mcp-scanner@v0.2.0
+        with:
+          config-path: .mcp.json
+          fail-on: high          # critical, high, medium, low, info or none
+```
+
+| Input | Default | Meaning |
+|---|---|---|
+| `config-path` | required | Path to the MCP config file in your repo |
+| `fail-on` | `high` | Fail the job at or above this severity, or `none` |
+| `baseline-dir` | empty | Directory with pinned baselines, enables rug pull detection |
+| `upload-sarif` | `true` | Upload to Code Scanning (needs `security-events: write`) |
+| `sarif-out` | `mcp-scanner.sarif` | Where the SARIF file is written |
+
+Code Scanning is free for public repositories. For private repositories it needs GitHub Code Security. Set `upload-sarif: "false"` to skip the upload and still get the job summary and the pass or fail result.
 
 ## Related work
 
