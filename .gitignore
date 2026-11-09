@@ -16,3 +16,7 @@ dist/
 
 # OS
 .DS_Store
+
+# local test environments
+test-env/
+*-env/

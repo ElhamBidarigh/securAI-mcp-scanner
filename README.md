@@ -2,7 +2,7 @@
 
 [![Regression](https://github.com/ElhamBidarigh/securAI-mcp-scanner/actions/workflows/regression.yml/badge.svg)](https://github.com/ElhamBidarigh/securAI-mcp-scanner/actions/workflows/regression.yml)
 
-🇮🇷 [راهنمای فارسی](README.fa.md)
+🇮🇷 [راهنمای فارسی](https://github.com/ElhamBidarigh/securAI-mcp-scanner/blob/main/README.fa.md)
 
 A security scanner for **MCP (Model Context Protocol)** server configurations and live tool surfaces - the protocol that connects AI agents (Claude, Cursor, VS Code, ChatGPT plugins, etc.) to external tools.
 
@@ -23,6 +23,15 @@ Optionally:
 - **`--llm-judge`** sends flagged (and unflagged) tool descriptions to a Claude model for a semantic second opinion, to cut down regex false positives.
 
 ## Install
+
+From PyPI:
+
+```bash
+pip install securai-mcp-scanner
+securai-mcp-scanner --version
+```
+
+From source (to run the tests or to contribute):
 
 ```bash
 git clone https://github.com/ElhamBidarigh/securAI-mcp-scanner.git
@@ -50,7 +59,7 @@ The core (`config_parser`, `static_checks`, `heuristics`, `baseline`, `report`) 
 python -m mcp_trust_scanner.cli scan examples/vulnerable_config.json
 ```
 
-This scans an intentionally vulnerable demo config and prints a Markdown report to stdout. See [`examples/sample_report.md`](examples/sample_report.md) for a full example of the generated output.
+This scans an intentionally vulnerable demo config and prints a Markdown report to stdout. See [`examples/sample_report.md`](https://github.com/ElhamBidarigh/securAI-mcp-scanner/blob/main/examples/sample_report.md) for a full example of the generated output.
 
 ## Usage
 
@@ -209,7 +218,7 @@ Issues and PRs welcome - especially new detection rules (`CFG-*` for config patt
 
 ## License
 
-MIT - see [LICENSE](LICENSE).
+MIT - see [LICENSE](https://github.com/ElhamBidarigh/securAI-mcp-scanner/blob/main/LICENSE).
 
 ## Author
 

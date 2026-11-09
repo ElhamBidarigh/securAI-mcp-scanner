@@ -2,6 +2,11 @@
 
 All notable changes to this project are listed here. The format follows Keep a Changelog.
 
+## [Unreleased]
+
+### Changed
+- README: install from PyPI documented, and links made absolute so they also work on the PyPI project page.
+
 ## [0.2.0]
 
 ### Added
