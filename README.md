@@ -12,6 +12,22 @@ This experimental scanner checks configuration and advertised tool metadata. It 
 server exploitability or inspect server source code. No false-positive reduction benchmark has
 been measured for the optional semantic judge.
 
+### Privacy and report limitations
+
+Reports apply best-effort redaction: sensitive environment/header values and URL query values
+are masked; launch arguments and tool-description evidence are omitted. Redaction cannot reliably
+identify every possible secret, especially in free text, exceptions or unusual configuration
+fields. Review all output before sharing it. The default Markdown and console no longer show a
+security score; the existing JSON `security_score` remains a legacy heuristic for compatibility
+and is not evidence of safety. The scanner does not guarantee that a configuration is secure.
+
+New baseline files store hashes of launch fields instead of their raw values and omit tool
+descriptions. Legacy baselines remain readable and **may still contain secrets**; review and
+secure or delete them yourself, then re-pin a trusted configuration if appropriate. Hashes are
+not encryption and may reveal low-entropy values through guessing, so protect baseline files.
+The optional `--llm-judge` sends tool descriptions to Anthropic; do not use it with sensitive
+metadata unless you are authorized to share it. Live inspection may run a configured process.
+
 ## What it checks
 
 1. **Server configuration (static, no connection needed)** - command injection via shell interpreters, unpinned supply-chain dependencies (`npx -y pkg` with no version), plaintext secrets in config files, overly broad filesystem access (`--allow-all`, root paths), missing transport security on remote servers (plain HTTP, no auth headers).

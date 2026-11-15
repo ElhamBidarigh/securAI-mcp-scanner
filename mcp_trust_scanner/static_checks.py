@@ -9,6 +9,8 @@ and are the foundation of every report (rule IDs starting with CFG-).
 from __future__ import annotations
 
 import re
+import ipaddress
+from urllib.parse import urlsplit
 from collections.abc import Iterator
 
 from .models import Finding, Severity, ServerInfo
@@ -165,7 +167,7 @@ def check_secrets_in_config(server: ServerInfo) -> Iterator[Finding]:
                     "git, synced to backups, or attached to bug reports -- any of which leaks "
                     "the credential."
                 ),
-                evidence=f"env.{key} = {value[:6]}{'*' * max(0, len(value) - 6)}",
+                evidence=f"env.{key} = [REDACTED]",
                 recommendation=(
                     "Reference an environment variable (e.g. \"${OPENAI_API_KEY}\") or a secrets "
                     "manager instead of a literal value; rotate this credential since it may "
@@ -218,7 +220,14 @@ def check_remote_transport_security(server: ServerInfo) -> Iterator[Finding]:
         return
 
     url = server.url.strip()
-    is_localhost = re.search(r"://(localhost|127\.0\.0\.1|\[::1\])", url) is not None
+    try:
+        host = (urlsplit(url).hostname or "").lower().rstrip(".")
+        try:
+            is_localhost = ipaddress.ip_address(host).is_loopback
+        except ValueError:
+            is_localhost = host == "localhost"
+    except ValueError:
+        is_localhost = False
 
     if url.startswith("http://") and not is_localhost:
         yield Finding(
@@ -240,15 +249,14 @@ def check_remote_transport_security(server: ServerInfo) -> Iterator[Finding]:
     if not is_localhost and not server.headers:
         yield Finding(
             id="CFG-008",
-            title="Remote MCP server has no authentication headers configured",
-            severity=Severity.HIGH,
+            title="Authentication is not visible in the supplied configuration",
+            severity=Severity.INFO,
             category="config",
             server_name=server.name,
             description=(
-                "This is a remote (non-localhost) MCP endpoint with no Authorization/API-key "
-                "header set in the client config. Either the server is unauthenticated (anyone "
-                "who finds the URL can call its tools), or auth happens some other way this scan "
-                "cannot see -- confirm which, because the former is a critical exposure."
+                "No authentication headers were supplied in the configuration. Authentication "
+                "may be provided through OAuth, a gateway, mTLS, or another mechanism. "
+                "The server's actual authentication is unknown."
             ),
             evidence=url,
             recommendation=(

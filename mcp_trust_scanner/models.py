@@ -129,11 +129,15 @@ class ScanResult:
                 {
                     "name": s.name,
                     "transport": s.transport,
+                    "live_status": getattr(s, "_live_status", "not recorded"),
+                    "llm_status": getattr(s, "_llm_status", "not recorded"),
+                    "baseline_status": getattr(s, "_baseline_status", "not recorded"),
                     "command": s.command,
                     "url": s.url,
                     "tool_count": len(s.tools),
                     "tools": [
-                        {"name": t.name, "description": t.description, "fingerprint": t.fingerprint()}
+                        {"name": t.name, "description": t.description,
+                         "fingerprint": getattr(t, "_reported_fingerprint", None) or t.fingerprint()}
                         for t in s.tools
                     ],
                 }
