@@ -12,7 +12,7 @@ import argparse
 import os
 import sys
 
-from .baseline import diff_against_baseline, save_baseline, BaselineError
+from .baseline import baseline_path, diff_against_baseline, save_baseline, BaselineError
 from .config_parser import parse_config_file, ConfigParseError
 from .heuristics import run_heuristic_checks
 from .models import Finding, ScanResult, Severity, ServerInfo
@@ -145,7 +145,10 @@ def _scan_one_server(
                 )
 
     if not args.no_drift_check:
+        server._baseline_status = 'compared' if baseline_path(args.baseline_dir, server.name).exists() else 'not found'
         findings.extend(diff_against_baseline(server, args.baseline_dir))
+    else:
+        server._baseline_status = 'disabled'
 
 
     return server, findings
@@ -175,9 +178,14 @@ def cmd_scan(args: argparse.Namespace) -> int:
         target_label=args.config,
         servers=resolved_servers,
         findings=all_findings,
-        llm_judge_used=bool(args.llm_judge and all(getattr(s, "_llm_completed", False) for s in resolved_servers if s.tools)),
+        llm_judge_used=bool(args.llm_judge and any(s.tools for s in resolved_servers)
+                            and all(getattr(s, "_llm_completed", False) for s in resolved_servers if s.tools)),
         live_introspection_used=bool(args.live and all(getattr(s, "_live_completed", False) for s in resolved_servers)),
     )
+    for server in resolved_servers:
+        server._live_status = ('completed' if getattr(server, '_live_completed', False) else 'failed') if args.live else 'not requested'
+        server._llm_status = ('not applicable: no tools' if not server.tools else
+                              'completed' if getattr(server, '_llm_completed', False) else 'failed') if args.llm_judge else 'not requested'
 
     incomplete = any(f.id in {"LIVE-001", "LLM-000"} for f in all_findings)
     gate_failed = args.fail_on and any(
@@ -216,7 +224,7 @@ def cmd_scan(args: argparse.Namespace) -> int:
             f"\n[mcp-trust-scanner] {len(resolved_servers)} server(s) scanned, "
             f"{len(all_findings)} finding(s) -- "
             f"critical={counts['critical']} high={counts['high']} medium={counts['medium']} "
-            f"low={counts['low']} info={counts['info']} -- security score {result.security_score()}/100",
+            f"low={counts['low']} info={counts['info']}",
             file=sys.stderr,
         )
         if args.out:

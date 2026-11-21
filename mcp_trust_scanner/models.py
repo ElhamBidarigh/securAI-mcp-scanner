@@ -51,9 +51,11 @@ class Finding:
     recommendation: str = ""
     confidence: str = "high"  # "high" | "medium" | "low" -- esp. for heuristic/LLM findings
     references: list[str] = field(default_factory=list)
+    fingerprint_subject: str = ""  # Stable source identity; never serialized in reports.
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
+        d.pop("fingerprint_subject", None)
         d["severity"] = self.severity.value
         return d
 
@@ -129,11 +131,15 @@ class ScanResult:
                 {
                     "name": s.name,
                     "transport": s.transport,
+                    "live_status": getattr(s, "_live_status", "not recorded"),
+                    "llm_status": getattr(s, "_llm_status", "not recorded"),
+                    "baseline_status": getattr(s, "_baseline_status", "not recorded"),
                     "command": s.command,
                     "url": s.url,
                     "tool_count": len(s.tools),
                     "tools": [
-                        {"name": t.name, "description": t.description, "fingerprint": t.fingerprint()}
+                        {"name": t.name, "description": t.description,
+                         "fingerprint": getattr(t, "_reported_fingerprint", None) or t.fingerprint()}
                         for t in s.tools
                     ],
                 }

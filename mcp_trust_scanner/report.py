@@ -12,6 +12,7 @@ import json
 from datetime import datetime, timezone
 
 from .models import ScanResult, Severity
+from .redaction import sanitized_result
 
 _SEVERITY_EMOJI = {
     Severity.CRITICAL: "🔴",
@@ -37,7 +38,7 @@ def _risk_label(score: int) -> str:
 
 
 def to_json(result: ScanResult) -> str:
-    return json.dumps(result.to_dict(), indent=2, ensure_ascii=False)
+    return json.dumps(sanitized_result(result).to_dict(), indent=2, ensure_ascii=False)
 
 
 def to_markdown(
@@ -46,9 +47,8 @@ def to_markdown(
     consultant_name: str = "",
     consultant_contact: str = "",
 ) -> str:
+    result = sanitized_result(result)
     counts = result.counts_by_severity()
-    score = result.security_score()
-    label = _risk_label(score)
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     lines: list[str] = []
@@ -68,22 +68,21 @@ def to_markdown(
     # Executive summary
     lines.append("## Executive Summary")
     lines.append("")
-    lines.append(f"**Heuristic security score (higher is better): {score}/100 - {label}**")
+    lines.append(f"**{len(result.findings)} finding(s). A static scan cannot establish that a server is safe.**")
     lines.append("")
     lines.append(
         f"This assessment reviewed {len(result.servers)} MCP server "
         f"configuration(s){' and its live tool surface' if result.live_introspection_used else ''}, "
-        "covering three layers: the server launch configuration (how it's invoked, what "
-        "access it's granted), the tool descriptions it exposes to the AI agent (which can "
-        "carry hidden prompt-injection instructions), and - where a prior baseline existed - "
-        "whether anything changed silently since the last review."
+        "using the configuration and any provided tool descriptions. Live inspection, LLM "
+        "review and baseline comparison only run when requested or a baseline is available. "
+        "The scan does not establish runtime behavior or exploitability."
     )
     lines.append("")
     lines.append("| Severity | Count | Meaning |")
     lines.append("|---|---|---|")
     lines.append(f"| 🔴 Critical | {counts['critical']} | Urgent review; exploitability is not established by a static scan |")
-    lines.append(f"| 🟠 High | {counts['high']} | Significant exposure; fix this week |")
-    lines.append(f"| 🟡 Medium | {counts['medium']} | Real risk; schedule a fix |")
+    lines.append(f"| 🟠 High | {counts['high']} | Significant potential risk; review context |")
+    lines.append(f"| 🟡 Medium | {counts['medium']} | Potential risk; review context |")
     lines.append(f"| 🔵 Low | {counts['low']} | Minor / defense-in-depth |")
     lines.append(f"| ⚪ Info | {counts['info']} | Context or scan limitation; review the finding |")
     lines.append("")
@@ -114,6 +113,9 @@ def to_markdown(
     for s in result.servers:
         lines.append(f"### `{s.name}`")
         lines.append(f"- Transport: `{s.transport}`")
+        lines.append(f"- Live inspection: {getattr(s, '_live_status', 'not recorded')}")
+        lines.append(f"- LM review: {getattr(s, '_llm_status', 'not recorded')}")
+        lines.append(f"- Baseline comparison: {getattr(s, '_baseline_status', 'not recorded')}")
         if s.command:
             lines.append(f"- Launch command: `{s.command} {' '.join(s.args)}`")
         if s.url:
@@ -154,11 +156,11 @@ def to_markdown(
     lines.append("## Methodology")
     lines.append("")
     lines.append(
-        "This assessment was produced with SecurAI MCP Scanner, a tool combining three layers: "
+        "This assessment was produced with SecurAI MCP Scanner. Available checks include: "
         "(1) static analysis of server launch configuration against known MCP risk patterns "
         "(command injection, unpinned supply-chain dependencies, plaintext secrets, "
         "overly broad filesystem/network access, missing transport security); "
-        "(2) heuristic and, where enabled, LLM-based semantic review of every tool description "
+        "(2) heuristic and, where enabled, LLM-based semantic review of supplied tool descriptions "
         "for prompt-injection / tool-poisoning language; and "
         "(3) baseline comparison against a prior scan to catch silent changes to tool behavior "
         "between reviews (\"rug pulls\"). "

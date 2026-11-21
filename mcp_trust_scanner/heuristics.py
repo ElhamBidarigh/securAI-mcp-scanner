@@ -99,6 +99,7 @@ def scan_tool_description(server: ServerInfo, tool: ToolInfo) -> Iterator[Findin
                     severity=severity,
                     category="tool-description",
                     server_name=server.name,
+                    fingerprint_subject=tool.name,
                     description=(
                         "This tool's `description` field -- text the model reads on every "
                         "turn, whether or not it's shown in any UI -- contains language "
@@ -124,6 +125,7 @@ def scan_tool_description(server: ServerInfo, tool: ToolInfo) -> Iterator[Findin
             severity=Severity.HIGH,
             category="tool-description",
             server_name=server.name,
+            fingerprint_subject=tool.name,
             description=(
                 "The description contains zero-width or bidi-control characters. These render "
                 "as nothing (or reordered text) in a UI but are still tokenized and read by the "
@@ -142,6 +144,7 @@ def scan_tool_description(server: ServerInfo, tool: ToolInfo) -> Iterator[Findin
             severity=Severity.MEDIUM,
             category="tool-description",
             server_name=server.name,
+            fingerprint_subject=tool.name,
             description=(
                 "The description embeds HTML-comment or fake system/instruction tags. Legitimate "
                 "tool descriptions are plain prose; structured markup here is a common carrier for "
@@ -159,6 +162,7 @@ def scan_tool_description(server: ServerInfo, tool: ToolInfo) -> Iterator[Findin
             severity=Severity.LOW,
             category="tool-description",
             server_name=server.name,
+            fingerprint_subject=tool.name,
             description=(
                 "Legitimate tool descriptions are typically a sentence or two. An unusually long "
                 "description is low-signal on its own but raises the prior for a hidden payload -- "

@@ -59,8 +59,8 @@ class TestSarifDocument(unittest.TestCase):
     def test_fingerprints_are_stable_and_distinct(self):
         a = to_sarif(self.make([finding(server="a"), finding(server="b")]), "x.json", "0.2.0")["runs"][0]["results"]
         b = to_sarif(self.make([finding(server="a"), finding(server="b")]), "x.json", "0.2.0")["runs"][0]["results"]
-        fa = [r["partialFingerprints"]["mcpScannerFinding/v1"] for r in a]
-        fb = [r["partialFingerprints"]["mcpScannerFinding/v1"] for r in b]
+        fa = [r["partialFingerprints"]["mcpScannerFinding/v2"] for r in a]
+        fb = [r["partialFingerprints"]["mcpScannerFinding/v2"] for r in b]
         self.assertEqual(fa, fb)
         self.assertNotEqual(fa[0], fa[1])
 
