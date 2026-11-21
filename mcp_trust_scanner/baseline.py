@@ -104,6 +104,7 @@ def diff_against_baseline(server: ServerInfo, baseline_dir: str) -> list[Finding
         findings.append(
             Finding(
                 id="DRIFT-001",
+                fingerprint_subject=name,
                 title=f"New tool appeared since last baseline: '{name}'",
                 severity=Severity.MEDIUM,
                 category="drift",
@@ -121,6 +122,7 @@ def diff_against_baseline(server: ServerInfo, baseline_dir: str) -> list[Finding
         findings.append(
             Finding(
                 id="DRIFT-002",
+                fingerprint_subject=name,
                 title=f"Previously-seen tool disappeared: '{name}'",
                 severity=Severity.LOW,
                 category="drift",
@@ -142,6 +144,7 @@ def diff_against_baseline(server: ServerInfo, baseline_dir: str) -> list[Finding
             findings.append(
                 Finding(
                     id="DRIFT-003",
+                    fingerprint_subject=tool.name,
                     title=f"Tool definition changed since last baseline: '{tool.name}'",
                     severity=Severity.CRITICAL,
                     category="drift",

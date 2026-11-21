@@ -157,6 +157,7 @@ def check_secrets_in_config(server: ServerInfo) -> Iterator[Finding]:
             yield Finding(
                 id="CFG-004",
                 title=f"Credential-looking value stored in plaintext (env.{key})",
+                fingerprint_subject=key,
                 severity=Severity.HIGH,
                 category="config",
                 server_name=server.name,
@@ -201,6 +202,7 @@ def check_dangerous_flags_and_broad_paths(server: ServerInfo) -> Iterator[Findin
             yield Finding(
                 id="CFG-006",
                 title=f"Filesystem scope includes a very broad path ('{a}')",
+                fingerprint_subject=a,
                 severity=Severity.HIGH,
                 category="config",
                 server_name=server.name,

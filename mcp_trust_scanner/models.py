@@ -51,9 +51,11 @@ class Finding:
     recommendation: str = ""
     confidence: str = "high"  # "high" | "medium" | "low" -- esp. for heuristic/LLM findings
     references: list[str] = field(default_factory=list)
+    fingerprint_subject: str = ""  # Stable source identity; never serialized in reports.
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
+        d.pop("fingerprint_subject", None)
         d["severity"] = self.severity.value
         return d
 

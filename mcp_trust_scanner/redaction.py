@@ -9,6 +9,14 @@ _SECRET = re.compile(r"(?i)(token|secret|password|passwd|api[_-]?key|authorizati
 _REFERENCE = re.compile(r"^\$\{?[A-Z_][A-Z0-9_]*\}?$")
 _URL = re.compile(r"https?://[^\s`\"'<>]+", re.I)
 _ASSIGNMENT = re.compile(r"(?i)(\b(?:api[_-]?key|token|secret|password|authorization|credential)\b\s*[=:]\s*['\"]?)([^\s,'\"}\]]+)")
+_KEY_VALUE = re.compile(r"^(?:sk-[A-Za-z0-9_-]{5,}|gh[pousr]_[A-Za-z0-9_]{4,}|AKIA[A-Z0-9]{12,}|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_.-]+|[a-fA-F0-9]{32,})$")
+_PACKAGE = re.compile(r"^(?:@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*(?:@[a-z0-9][a-z0-9._-]*)?$")
+_SAFE_FLAGS = {'-y', '--yes', '--allow-all', '--dangerously-skip-permissions', '--yolo',
+               '--no-sandbox', '--disable-sandbox', '--allow-root', '--insecure', '--full-disk-access'}
+
+
+def _looks_like_credential(value: str) -> bool:
+    return len(value) >= 8 and bool(_KEY_VALUE.fullmatch(value))
 
 
 def _url_values(value: str) -> set[str]:
@@ -29,8 +37,11 @@ def _url_values(value: str) -> set[str]:
 def _secrets(servers) -> set[str]:
     values: set[str] = set()
     for server in servers:
-        # Env and headers may contain sensitive values even with innocuous names.
-        values.update(v for v in (*server.env.values(), *server.headers.values()) if v and not _REFERENCE.fullmatch(v))
+        for key, value in (*server.env.items(), *server.headers.items()):
+            if value and (_SECRET.search(key) or _looks_like_credential(value)):
+                values.add(value)
+                if value.lower().startswith('bearer '):
+                    values.add(value[7:].strip())
         tokens = server.args
         for i, arg in enumerate(tokens):
             if i and _SECRET.search(tokens[i - 1]) and not arg.startswith('-'):
@@ -46,7 +57,8 @@ def _secrets(servers) -> set[str]:
 
 def redact_text(text: str, secrets: set[str]) -> str:
     for value in sorted(secrets, key=len, reverse=True):
-        text = text.replace(value, '[REDACTED]')
+        text = re.sub(r'(?<![\w.\-])' + re.escape(value) + r'(?![\w.\-])',
+                      lambda _: '[REDACTED]', text)
     text = _ASSIGNMENT.sub(r'\1[REDACTED]', text)
     # Omit all URL query/fragment and user info, even when key names are unknown.
     def clean_url(match):
@@ -67,22 +79,29 @@ def sanitized_result(result):
     safe = copy.deepcopy(result)
     secrets = _secrets(result.servers)
     for server in safe.servers:
-        server.name = redact_text(server.name, secrets)
         server.command = redact_text(server.command, secrets) if server.command else server.command
         # Arbitrary argument strings can contain secrets that cannot be identified reliably.
         server.args = ['[OMITTED: launch arguments may contain secrets]'] if server.args else []
         server.url = redact_text(server.url, secrets) if server.url else server.url
         for tool in server.tools:
             tool._reported_fingerprint = tool.fingerprint()
-            tool.name = redact_text(tool.name, secrets)
             # Arbitrary external metadata may contain credentials unknown to us.
             tool.description = '[OMITTED: untrusted tool metadata may contain secrets]'
     for finding in safe.findings:
-        for field in ('title', 'server_name', 'description', 'evidence', 'recommendation'):
+        for field in ('description', 'evidence', 'recommendation'):
             setattr(finding, field, redact_text(getattr(finding, field), secrets))
         if finding.category in ('tool-description', 'llm-judge', 'drift') and finding.evidence:
             finding.evidence = '[OMITTED: untrusted metadata may contain secrets]'
         if finding.id in {'CFG-001', 'CFG-002', 'CFG-003', 'CFG-005', 'CFG-006'} and finding.evidence:
             finding.evidence = '[OMITTED: launch arguments may contain secrets]'
+            original = next((s for s in result.servers if s.name == finding.server_name), None)
+            if original and finding.id == 'CFG-005':
+                flags = [a for a in original.args if a in _SAFE_FLAGS]
+                if flags:
+                    finding.evidence = 'Permission-related flags: ' + ', '.join(flags)
+            elif original and finding.id == 'CFG-003' and original.command in {'npx', 'bunx'}:
+                candidates = [a for a in original.args if _PACKAGE.fullmatch(a) and not a.startswith('-')]
+                if candidates:
+                    finding.evidence = 'Package: ' + redact_text(candidates[0], secrets)
     safe.target_label = redact_text(safe.target_label, secrets)
     return safe

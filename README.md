@@ -14,8 +14,10 @@ been measured for the optional semantic judge.
 
 ### Privacy and report limitations
 
-Reports apply best-effort redaction: sensitive environment/header values and URL query values
-are masked; launch arguments and tool-description evidence are omitted. Redaction cannot reliably
+Reports apply best-effort redaction: secret-like environment/header values and URL query values
+are masked; most launch arguments and tool-description evidence are omitted. Recognized
+permission flags and package names for `npx`/`bunx` unpinned-package findings may be shown.
+Redaction cannot reliably
 identify every possible secret, especially in free text, exceptions or unusual configuration
 fields. Review all output before sharing it. The default Markdown and console no longer show a
 security score; the existing JSON `security_score` remains a legacy heuristic for compatibility
@@ -27,6 +29,8 @@ secure or delete them yourself, then re-pin a trusted configuration if appropria
 not encryption and may reveal low-entropy values through guessing, so protect baseline files.
 The optional `--llm-judge` sends tool descriptions to Anthropic; do not use it with sensitive
 metadata unless you are authorized to share it. Live inspection may run a configured process.
+SARIF fingerprints use stable rule, server and finding-subject identities (v2); migration from
+the earlier v1 fingerprint algorithm may cause existing code-scanning alerts to be treated as new.
 
 ## What it checks
 

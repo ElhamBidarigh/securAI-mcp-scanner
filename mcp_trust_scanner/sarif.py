@@ -96,7 +96,7 @@ def _server_line(text: str, server_name: str) -> int:
 
 
 def _fingerprint(f: Finding) -> str:
-    raw = "|".join([f.id, f.server_name, f.title])
+    raw = json.dumps([f.id, f.server_name, f.fingerprint_subject], ensure_ascii=False)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:32]
 
 
@@ -144,7 +144,7 @@ def to_sarif(result: ScanResult, config_path: str, tool_version: str) -> dict:
                     "region": {"startLine": _server_line(text, f.server_name)},
                 }
             }],
-            "partialFingerprints": {"mcpScannerFinding/v1": _fingerprint(f)},
+            "partialFingerprints": {"mcpScannerFinding/v2": _fingerprint(f)},
             "properties": {
                 "server": f.server_name,
                 "category": f.category,

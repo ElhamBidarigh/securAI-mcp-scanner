@@ -124,6 +124,7 @@ def run_llm_judge(server: ServerInfo, api_key: str) -> list[Finding]:
                 severity=severity,
                 category="llm-judge",
                 server_name=server.name,
+                fingerprint_subject=v.tool_name,
                 description=(
                     f"Semantic review by {JUDGE_MODEL} independently flagged this tool's "
                     f"description as {v.verdict}, separate from the regex heuristic layer."
