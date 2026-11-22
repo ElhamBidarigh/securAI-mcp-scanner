@@ -127,6 +127,8 @@ class SecurityRegressions(unittest.TestCase):
             for value in secrets:
                 for artifact in artifacts:
                     self.assertNotIn(value, artifact)
+            self.assertNotIn('[REDACTED]]', outputs[0].read_text())
+            self.assertNotIn('[REDACTED]]', outputs[1].read_text())
             self.assertIn('CFG-007', outputs[0].read_text())
 
     def test_baseline_hashes_detect_changes_and_legacy_still_loads(self):
