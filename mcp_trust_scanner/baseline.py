@@ -40,14 +40,21 @@ def save_baseline(baseline_dir: str, server: ServerInfo) -> Path:
     path = baseline_path(baseline_dir, server.name)
     data = {
         "server_name": server.name,
-        "transport": server.transport,
-        "command": server.command,
-        "args": server.args,
-        "url": server.url,
-        "tools": {t.name: {"fingerprint": t.fingerprint(), "description": t.description} for t in server.tools},
+        "version": 2,
+        "connection_fingerprints": {key: _fingerprint(value) for key, value in _connection(server).items()},
+        "tools": {t.name: {"fingerprint": t.fingerprint()} for t in server.tools},
     }
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False, sort_keys=True), encoding="utf-8")
     return path
+
+
+def _connection(server: ServerInfo) -> dict[str, Any]:
+    return {"transport": server.transport, "command": server.command,
+            "args": server.args, "url": server.url}
+
+
+def _fingerprint(value: Any) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
 def load_baseline(baseline_dir: str, server_name: str) -> dict[str, Any] | None:
@@ -75,10 +82,13 @@ def diff_against_baseline(server: ServerInfo, baseline_dir: str) -> list[Finding
         return []
 
     findings: list[Finding] = []
-    changed = [key for key, value in {
-        "transport": server.transport, "command": server.command,
-        "args": server.args, "url": server.url,
-    }.items() if baseline.get(key) != value]
+    fields = _connection(server)
+    hashes = baseline.get("connection_fingerprints")
+    if baseline.get("version") == 2 and not isinstance(hashes, dict):
+        raise BaselineError("Invalid version 2 baseline: missing connection fingerprints")
+    changed = [key for key, value in fields.items()
+               if (hashes.get(key) != _fingerprint(value) if isinstance(hashes, dict)
+                   else baseline.get(key) != value)]
     if changed:
         findings.append(Finding(
             id="DRIFT-004", title="Server connection or launch configuration changed",
@@ -94,6 +104,7 @@ def diff_against_baseline(server: ServerInfo, baseline_dir: str) -> list[Finding
         findings.append(
             Finding(
                 id="DRIFT-001",
+                fingerprint_subject=name,
                 title=f"New tool appeared since last baseline: '{name}'",
                 severity=Severity.MEDIUM,
                 category="drift",
@@ -111,6 +122,7 @@ def diff_against_baseline(server: ServerInfo, baseline_dir: str) -> list[Finding
         findings.append(
             Finding(
                 id="DRIFT-002",
+                fingerprint_subject=name,
                 title=f"Previously-seen tool disappeared: '{name}'",
                 severity=Severity.LOW,
                 category="drift",
@@ -132,6 +144,7 @@ def diff_against_baseline(server: ServerInfo, baseline_dir: str) -> list[Finding
             findings.append(
                 Finding(
                     id="DRIFT-003",
+                    fingerprint_subject=tool.name,
                     title=f"Tool definition changed since last baseline: '{tool.name}'",
                     severity=Severity.CRITICAL,
                     category="drift",
@@ -142,10 +155,7 @@ def diff_against_baseline(server: ServerInfo, baseline_dir: str) -> list[Finding
                         "that behaves one way during review and differently afterward. Treat "
                         "this as an incident until proven otherwise."
                     ),
-                    evidence=(
-                        f"Old description: {old.get('description', '')[:200]!r}\n"
-                        f"New description: {tool.description[:200]!r}"
-                    ),
+                    evidence="Tool fingerprint changed; descriptions are omitted from reports.",
                     confidence="high",
                     recommendation=(
                         "Diff the old and new descriptions/schemas line by line. If the change "

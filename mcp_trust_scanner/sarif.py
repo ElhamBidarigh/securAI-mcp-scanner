@@ -27,6 +27,7 @@ import re
 from pathlib import Path
 
 from .models import Finding, ScanResult, Severity
+from .redaction import sanitized_result
 
 SARIF_SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json"
 INFORMATION_URI = "https://github.com/ElhamBidarigh/securAI-mcp-scanner"
@@ -56,7 +57,7 @@ RULE_TITLES = {
     "CFG-005": "Permission-bypass flag in launch arguments",
     "CFG-006": "Very broad filesystem scope",
     "CFG-007": "Remote MCP server reachable over plain HTTP",
-    "CFG-008": "Remote MCP server without authentication headers",
+    "CFG-008": "Authentication is not visible in the supplied configuration",
     "TDX-001": "Instruction-override language in a tool description",
     "TDX-002": "Data-exfiltration instruction in a tool description",
     "TDX-003": "Tool description tries to hijack tool routing",
@@ -95,11 +96,12 @@ def _server_line(text: str, server_name: str) -> int:
 
 
 def _fingerprint(f: Finding) -> str:
-    raw = "|".join([f.id, f.server_name, f.title])
+    raw = json.dumps([f.id, f.server_name, f.fingerprint_subject], ensure_ascii=False)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:32]
 
 
 def to_sarif(result: ScanResult, config_path: str, tool_version: str) -> dict:
+    result = sanitized_result(result)
     uri = _artifact_uri(config_path)
     try:
         text = Path(config_path).read_text(encoding="utf-8")
@@ -142,7 +144,7 @@ def to_sarif(result: ScanResult, config_path: str, tool_version: str) -> dict:
                     "region": {"startLine": _server_line(text, f.server_name)},
                 }
             }],
-            "partialFingerprints": {"mcpScannerFinding/v1": _fingerprint(f)},
+            "partialFingerprints": {"mcpScannerFinding/v2": _fingerprint(f)},
             "properties": {
                 "server": f.server_name,
                 "category": f.category,
