@@ -8,7 +8,7 @@ from urllib.parse import parse_qsl, unquote, urlsplit
 _SECRET = re.compile(r"(?i)(token|secret|password|passwd|api[_-]?key|authorization|credential|private[_-]?key)")
 _REFERENCE = re.compile(r"^\$\{?[A-Z_][A-Z0-9_]*\}?$")
 _URL = re.compile(r"https?://[^\s`\"'<>]+", re.I)
-_ASSIGNMENT = re.compile(r"(?i)(\b(?:api[_-]?key|token|secret|password|authorization|credential)\b\s*[=:]\s*['\"]?)([^\s,'\"}\]]+)")
+_ASSIGNMENT = re.compile(r"(?i)(\b(?:api[_-]?key|token|secret|password|authorization|credential)\b\s*[=:]\s*['\"]?)(\[REDACTED\]|[^\s,'\"}\]]+)")
 _KEY_VALUE = re.compile(r"^(?:sk-[A-Za-z0-9_-]{5,}|gh[pousr]_[A-Za-z0-9_]{4,}|AKIA[A-Z0-9]{12,}|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_.-]+|[a-fA-F0-9]{32,})$")
 _PACKAGE = re.compile(r"^(?:@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*(?:@[a-z0-9][a-z0-9._-]*)?$")
 _SAFE_FLAGS = {'-y', '--yes', '--allow-all', '--dangerously-skip-permissions', '--yolo',
@@ -59,7 +59,7 @@ def redact_text(text: str, secrets: set[str]) -> str:
     for value in sorted(secrets, key=len, reverse=True):
         text = re.sub(r'(?<![\w.\-])' + re.escape(value) + r'(?![\w.\-])',
                       lambda _: '[REDACTED]', text)
-    text = _ASSIGNMENT.sub(r'\1[REDACTED]', text)
+    text = _ASSIGNMENT.sub(lambda match: match.group(1) + '[REDACTED]', text)
     # Omit all URL query/fragment and user info, even when key names are unknown.
     def clean_url(match):
         try:

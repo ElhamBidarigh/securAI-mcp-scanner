@@ -4,9 +4,6 @@ All notable changes to this project are listed here. The format follows Keep a C
 
 ## [Unreleased]
 
-### Changed
-- README: install from PyPI documented, and links made absolute so they also work on the PyPI project page.
-
 ## [0.2.1]
 
 ### Security
@@ -15,6 +12,7 @@ All notable changes to this project are listed here. The format follows Keep a C
 - Parse URL hostnames and IP addresses to distinguish loopback endpoints from similarly named remote hosts.
 
 ### Changed
+- README: install from PyPI documented, and links made absolute so they also work on the PyPI project page.
 - Preserve server names, rule IDs and finding titles when masking values. Show selected recognizable package names and permission flags as evidence.
 - Report authentication as unknown when it is not visible in configuration, and show per-server inspection status. The default human-readable report no longer displays a numerical security score; the legacy JSON score remains for compatibility.
 - Use SARIF v2 fingerprints based on rule, server and finding subject. Existing code-scanning alerts may be treated as new after migration from v1.

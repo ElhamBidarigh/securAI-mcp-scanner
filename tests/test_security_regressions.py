@@ -13,6 +13,17 @@ from mcp_trust_scanner.static_checks import run_static_checks
 
 
 class SecurityRegressions(unittest.TestCase):
+    def test_assignment_redaction_is_idempotent(self):
+        for original in ('env.API_KEY = [REDACTED]', 'env.API_KEY = fake-test-secret',
+                         'authorization: fake-test-secret'):
+            with self.subTest(original=original):
+                once = redact_text(original, {'fake-test-secret'})
+                twice = redact_text(once, {'fake-test-secret'})
+                self.assertEqual(once, twice)
+                self.assertNotIn('fake-test-secret', once)
+                self.assertNotIn('[REDACTED]]', once)
+                self.assertNotIn('[REDACTED]]', twice)
+
     def test_common_values_do_not_corrupt_identity_or_reports(self):
         config = {'mcpServers': {'files1': {'command': 'npx',
                   'args': ['-y', '@vendor/files-mcp-v1', '--allow-all', '/'],
